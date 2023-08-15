@@ -13,8 +13,7 @@ def load_data(start, end):
         img = cv2.imread(img_path)
         imgs_hr.append(img)
 
-    imgs_hr = np.array(imgs_hr) / 127.5 - 1
-    return imgs_hr
+    return np.array(imgs_hr) / 127.5 - 1
 
 
 def deblur_real():
@@ -29,7 +28,10 @@ def deblur_real():
 
         for j in range(2):
             count += 1
-            cv2.imwrite('/home/alyssa/PythonProjects/occluded/11/'+str(count)+'_1.jpg', result[j])
+            cv2.imwrite(
+                f'/home/alyssa/PythonProjects/occluded/11/{count}_1.jpg',
+                result[j],
+            )
 
  
 deblur_real()

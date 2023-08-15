@@ -7,12 +7,12 @@ import sys
 import shutil
 import skimage 
 
-caffe_root = '/home/cscl/caffe-master/' 
-sys.path.insert(0, caffe_root + 'python')
+caffe_root = '/home/cscl/caffe-master/'
+sys.path.insert(0, f'{caffe_root}python')
 import caffe
 
 net_file = 'alexnet_deploy.prototxt'
-caffe_model = 'models/alexnet_hccr.caffemodel' 
+caffe_model = 'models/alexnet_hccr.caffemodel'
 mean_file = 'meanfiles/CASIA1.0_1.1_1.2_mean_108.npy'
 unicode_index = np.loadtxt('util/unicode_index.txt', delimiter = ',',dtype = np.int) #7534
 net = caffe.Net(net_file,caffe_model,caffe.TEST)
@@ -26,7 +26,7 @@ def get_crop_image(imagepath, img_name):
 	min_y = min(black_index[1])
 	max_y = max(black_index[1])
 	#print(min_x,max_x,min_y,max_y)
-	image = caffe.io.load_image(imagepath+"//"+img_name)
+	image = caffe.io.load_image(f"{imagepath}//{img_name}")
 	return image[min_x:max_x, min_y:max_y,:]
 
 

@@ -16,7 +16,7 @@ def draw_per_augmenter_images():
         num = 0
         tag_code = path.split('/')[7]
 
-        name = glob(path+'/*')
+        name = glob(f'{path}/*')
         for img_name in name:
             count = 0
             file_name = img_name.split('/')[8]
@@ -35,13 +35,10 @@ def draw_per_augmenter_images():
                     im = PIL.Image.fromarray(aug_det.augment_image(image))
                     im = im.resize((64, 64), PIL.Image.ANTIALIAS)
 
-                    if(os.path.exists(TARGET_PATH + tag_code)):
-                        filename = TARGET_PATH + tag_code + '/' + str(count) + "_" + file_name
-                        im.save(filename)
-                    else:
+                    if not (os.path.exists(TARGET_PATH + tag_code)):
                         os.makedirs(TARGET_PATH + tag_code)
-                        filename = TARGET_PATH + tag_code + '/' + str(count) + "_" + file_name
-                        im.save(filename)
+                    filename = TARGET_PATH + tag_code + '/' + str(count) + "_" + file_name
+                    im.save(filename)
                     count += 1
 
     print(num)

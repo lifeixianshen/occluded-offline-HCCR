@@ -102,8 +102,10 @@ def generator_containing_discriminator_multiple_outputs(generator, discriminator
     fake_result = Multiply()([mask, generated_images])
     outputs = discriminator(generated_images)
 
-    model = Model(inputs=[input_images, mask], outputs=[fake_result, fake_features, outputs])
-    return model
+    return Model(
+        inputs=[input_images, mask],
+        outputs=[fake_result, fake_features, outputs],
+    )
 
 
 if __name__ == '__main__':

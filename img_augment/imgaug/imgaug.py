@@ -47,7 +47,7 @@ def is_iterable(val):
 
 
 def is_string(val):
-    return isinstance(val, str) or isinstance(val, unicode)
+    return isinstance(val, (str, unicode))
 
 
 def is_integer_array(val):
@@ -75,11 +75,10 @@ def dummy_random_state():
 def copy_random_state(random_state, force_copy=False):
     if random_state == np.random and not force_copy:
         return random_state
-    else:
-        rs_copy = dummy_random_state()
-        orig_state = random_state.get_state()
-        rs_copy.set_state(orig_state)
-        return rs_copy
+    rs_copy = dummy_random_state()
+    orig_state = random_state.get_state()
+    rs_copy.set_state(orig_state)
+    return rs_copy
 
 # TODO
 # def from_json(json_str):
@@ -175,10 +174,7 @@ def imresize_single_image(image, sizes, interpolation=None):
         image = image[:, :, np.newaxis]
     assert len(image.shape) == 3, image.shape
     rs = imresize_many_images(image[np.newaxis, :, :, :], sizes, interpolation=interpolation)
-    if grayscale:
-        return np.squeeze(rs[0, :, :, 0])
-    else:
-        return rs[0, ...]
+    return np.squeeze(rs[0, :, :, 0]) if grayscale else rs[0, ...]
 
 
 def draw_grid(images, rows=None, cols=None):
@@ -188,16 +184,16 @@ def draw_grid(images, rows=None, cols=None):
         assert is_iterable(images)
 
     nb_images = len(images)
-    cell_height = max([image.shape[0] for image in images])
-    cell_width = max([image.shape[1] for image in images])
-    channels = set([image.shape[2] for image in images])
+    cell_height = max(image.shape[0] for image in images)
+    cell_width = max(image.shape[1] for image in images)
+    channels = {image.shape[2] for image in images}
     assert len(channels) == 1
     nb_channels = list(channels)[0]
     if rows is None and cols is None:
         rows = cols = int(math.ceil(math.sqrt(nb_images)))
     elif rows is not None:
         cols = int(math.ceil(nb_images / rows))
-    elif cols is not None:
+    else:
         rows = int(math.ceil(nb_images / cols))
     assert rows * cols >= nb_images
 
@@ -279,14 +275,13 @@ class Keypoint(object):
         self.y = y
 
     def project(self, from_shape, to_shape):
-        if from_shape[0:2] == to_shape[0:2]:
+        if from_shape[:2] == to_shape[:2]:
             return Keypoint(x=self.x, y=self.y)
-        else:
-            from_height, from_width = from_shape[0:2]
-            to_height, to_width = to_shape[0:2]
-            x = int(round((self.x / from_width) * to_width))
-            y = int(round((self.y / from_height) * to_height))
-            return Keypoint(x=x, y=y)
+        from_height, from_width = from_shape[:2]
+        to_height, to_width = to_shape[:2]
+        x = int(round((self.x / from_width) * to_width))
+        y = int(round((self.y / from_height) * to_height))
+        return Keypoint(x=x, y=y)
 
     def shift(self, x, y):
         return Keypoint(self.x + x, self.y + y)
@@ -316,22 +311,17 @@ class KeypointsOnImage(object):
         return self.shape[1]
 
     def on(self, image):
-        if is_np_array(image):
-            shape = image.shape
-        else:
-            shape = image
-
-        if shape[0:2] == self.shape[0:2]:
+        shape = image.shape if is_np_array(image) else image
+        if shape[:2] == self.shape[:2]:
             return self.deepcopy()
-        else:
-            keypoints = [kp.project(self.shape, shape) for kp in self.keypoints]
-            return KeypointsOnImage(keypoints, shape)
+        keypoints = [kp.project(self.shape, shape) for kp in self.keypoints]
+        return KeypointsOnImage(keypoints, shape)
 
     def draw_on_image(self, image, color=[0, 255, 0], size=3, copy=True, raise_if_out_of_image=False):
         if copy:
             image = np.copy(image)
 
-        height, width = image.shape[0:2]
+        height, width = image.shape[:2]
 
         for keypoint in self.keypoints:
             y, x = keypoint.y, keypoint.x
@@ -341,9 +331,8 @@ class KeypointsOnImage(object):
                 y1 = max(y - size//2, 0)
                 y2 = min(y + 1 + size//2, height - 1)
                 image[y1:y2, x1:x2] = color
-            else:
-                if raise_if_out_of_image:
-                    raise Exception("Cannot draw keypoint x=%d, y=%d on image with shape %s." % (y, x, image.shape))
+            elif raise_if_out_of_image:
+                raise Exception("Cannot draw keypoint x=%d, y=%d on image with shape %s." % (y, x, image.shape))
 
         return image
 
@@ -366,7 +355,7 @@ class KeypointsOnImage(object):
 
     def to_keypoint_image(self):
         assert len(self.keypoints) > 0
-        height, width = self.shape[0:2]
+        height, width = self.shape[:2]
         image = np.zeros((height, width, len(self.keypoints)), dtype=np.uint8)
         for i, keypoint in enumerate(self.keypoints):
             y = keypoint.y
@@ -393,7 +382,9 @@ class KeypointsOnImage(object):
             if_not_found_x = if_not_found_coords["x"]
             if_not_found_y = if_not_found_coords["y"]
         else:
-            raise Exception("Expected if_not_found_coords to be None or tuple or list or dict, got %s." % (type(if_not_found_coords),))
+            raise Exception(
+                f"Expected if_not_found_coords to be None or tuple or list or dict, got {type(if_not_found_coords)}."
+            )
 
         keypoints = []
         for i in sm.xrange(nb_keypoints):
@@ -402,11 +393,8 @@ class KeypointsOnImage(object):
             found = (image[maxidx_ndim[0], maxidx_ndim[1], i] >= threshold)
             if found:
                 keypoints.append(Keypoint(x=maxidx_ndim[1], y=maxidx_ndim[0]))
-            else:
-                if drop_if_not_found:
-                    pass # dont add the keypoint to the result list, i.e. drop it
-                else:
-                    keypoints.append(Keypoint(x=if_not_found_x, y=if_not_found_y))
+            elif not drop_if_not_found:
+                keypoints.append(Keypoint(x=if_not_found_x, y=if_not_found_y))
 
         return KeypointsOnImage(keypoints, shape=(height, width))
 
@@ -424,7 +412,7 @@ class KeypointsOnImage(object):
 
     def __str__(self):
         #print(type(self.keypoints), type(self.shape))
-        return "KeypointOnImage(%s, shape=%s)" % (str(self.keypoints), self.shape)
+        return f"KeypointOnImage({str(self.keypoints)}, shape={self.shape})"
 
 # TODO
 """

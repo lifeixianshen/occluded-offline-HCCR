@@ -19,7 +19,7 @@ def spatial_reflection_2d_padding(x, padding=((1, 1), (1, 1)), data_format=None)
     assert len(padding[0]) == 2
     assert len(padding[1]) == 2
     if data_format not in {'channels_first', 'channels_last'}:
-        raise ValueError('Unknown data_format ' + str(data_format))
+        raise ValueError(f'Unknown data_format {str(data_format)}')
 
     if data_format == 'channels_first':
         pattern = [[0, 0],
@@ -101,27 +101,31 @@ class ReflectionPadding2D(Layer):
 
     def compute_output_shape(self, input_shape):
         if self.data_format == 'channels_first':
-            if input_shape[2] is not None:
-                rows = input_shape[2] + self.padding[0][0] + self.padding[0][1]
-            else:
-                rows = None
-            if input_shape[3] is not None:
-                cols = input_shape[3] + self.padding[1][0] + self.padding[1][1]
-            else:
-                cols = None
+            rows = (
+                input_shape[2] + self.padding[0][0] + self.padding[0][1]
+                if input_shape[2] is not None
+                else None
+            )
+            cols = (
+                input_shape[3] + self.padding[1][0] + self.padding[1][1]
+                if input_shape[3] is not None
+                else None
+            )
             return (input_shape[0],
                     input_shape[1],
                     rows,
                     cols)
         elif self.data_format == 'channels_last':
-            if input_shape[1] is not None:
-                rows = input_shape[1] + self.padding[0][0] + self.padding[0][1]
-            else:
-                rows = None
-            if input_shape[2] is not None:
-                cols = input_shape[2] + self.padding[1][0] + self.padding[1][1]
-            else:
-                cols = None
+            rows = (
+                input_shape[1] + self.padding[0][0] + self.padding[0][1]
+                if input_shape[1] is not None
+                else None
+            )
+            cols = (
+                input_shape[2] + self.padding[1][0] + self.padding[1][1]
+                if input_shape[2] is not None
+                else None
+            )
             return (input_shape[0],
                     rows,
                     cols,

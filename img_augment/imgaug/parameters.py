@@ -34,14 +34,20 @@ class Binomial(StochasticParameter):
         if isinstance(p, StochasticParameter):
             self.p = p
         elif ia.is_single_number(p):
-            assert 0 <= p <= 1.0, "Expected probability p to be in range [0.0, 1.0], got %s." % (p,)
+            assert (
+                0 <= p <= 1.0
+            ), f"Expected probability p to be in range [0.0, 1.0], got {p}."
             self.p = Deterministic(float(p))
         else:
-            raise Exception("Expected StochasticParameter or float/int value, got %s." % (type(p),))
+            raise Exception(
+                f"Expected StochasticParameter or float/int value, got {type(p)}."
+            )
 
     def _draw_samples(self, size, random_state):
         p = self.p.draw_sample(random_state=random_state)
-        assert 0 <= p <= 1.0, "Expected probability p to be in range [0.0, 1.0], got %s." % (p,)
+        assert (
+            0 <= p <= 1.0
+        ), f"Expected probability p to be in range [0.0, 1.0], got {p}."
         return random_state.binomial(1, p, size)
 
     def __repr__(self):
@@ -51,7 +57,7 @@ class Binomial(StochasticParameter):
         if isinstance(self.p, float):
             return "Binomial(%.4f)" % (self.p,)
         else:
-            return "Binomial(%s)" % (self.p,)
+            return f"Binomial({self.p})"
 
 class Choice(StochasticParameter):
     def __init__(self, a, replace=True, p=None):
@@ -68,25 +74,22 @@ class Choice(StochasticParameter):
         return self.__str__()
 
     def __str__(self):
-        return "Choice(a=%s, replace=%s, p=%s)" % (str(self.a), str(self.replace), str(self.p),)
+        return f"Choice(a={str(self.a)}, replace={str(self.replace)}, p={str(self.p)})"
 
 class DiscreteUniform(StochasticParameter):
     def __init__(self, a, b):
         StochasticParameter.__init__(self)
 
         # for two ints the samples will be from range a <= x <= b
-        assert isinstance(a, (int, StochasticParameter)), "Expected a to be int or StochasticParameter, got %s" % (type(a),)
-        assert isinstance(b, (int, StochasticParameter)), "Expected b to be int or StochasticParameter, got %s" % (type(b),)
+        assert isinstance(
+            a, (int, StochasticParameter)
+        ), f"Expected a to be int or StochasticParameter, got {type(a)}"
+        assert isinstance(
+            b, (int, StochasticParameter)
+        ), f"Expected b to be int or StochasticParameter, got {type(b)}"
 
-        if ia.is_single_integer(a):
-            self.a = Deterministic(a)
-        else:
-            self.a = a
-
-        if ia.is_single_integer(b):
-            self.b = Deterministic(b)
-        else:
-            self.b = b
+        self.a = Deterministic(a) if ia.is_single_integer(a) else a
+        self.b = Deterministic(b) if ia.is_single_integer(b) else b
 
     def _draw_samples(self, size, random_state):
         a = self.a.draw_sample(random_state=random_state)
@@ -101,7 +104,7 @@ class DiscreteUniform(StochasticParameter):
         return self.__str__()
 
     def __str__(self):
-        return "DiscreteUniform(%s, %s)" % (self.a, self.b)
+        return f"DiscreteUniform({self.a}, {self.b})"
 
 class Normal(StochasticParameter):
     def __init__(self, loc, scale):
@@ -117,7 +120,9 @@ class Normal(StochasticParameter):
         if isinstance(scale, StochasticParameter):
             self.scale = scale
         elif ia.is_single_number(scale):
-            assert scale >= 0, "Expected scale to be in range [0, inf) got %s (type %s)." % (scale, type(scale))
+            assert (
+                scale >= 0
+            ), f"Expected scale to be in range [0, inf) got {scale} (type {type(scale)})."
             self.scale = Deterministic(scale)
         else:
             raise Exception("Expected float, int or StochasticParameter as scale, got %s, %s." % (type(scale),))
@@ -125,7 +130,7 @@ class Normal(StochasticParameter):
     def _draw_samples(self, size, random_state):
         loc = self.loc.draw_sample(random_state=random_state)
         scale = self.scale.draw_sample(random_state=random_state)
-        assert scale >= 0, "Expected scale to be in rnage [0, inf), got %s." % (scale,)
+        assert scale >= 0, f"Expected scale to be in rnage [0, inf), got {scale}."
         if scale == 0:
             return np.tile(loc, size)
         else:
@@ -135,24 +140,21 @@ class Normal(StochasticParameter):
         return self.__str__()
 
     def __str__(self):
-        return "Normal(loc=%s, scale=%s)" % (self.loc, self.scale)
+        return f"Normal(loc={self.loc}, scale={self.scale})"
 
 class Uniform(StochasticParameter):
     def __init__(self, a, b):
         super(Uniform, self).__init__()
 
-        assert isinstance(a, (int, float, StochasticParameter)), "Expected a to be int, float or StochasticParameter, got %s" % (type(a),)
-        assert isinstance(b, (int, float, StochasticParameter)), "Expected b to be int, float or StochasticParameter, got %s" % (type(b),)
+        assert isinstance(
+            a, (int, float, StochasticParameter)
+        ), f"Expected a to be int, float or StochasticParameter, got {type(a)}"
+        assert isinstance(
+            b, (int, float, StochasticParameter)
+        ), f"Expected b to be int, float or StochasticParameter, got {type(b)}"
 
-        if ia.is_single_number(a):
-            self.a = Deterministic(a)
-        else:
-            self.a = a
-
-        if ia.is_single_number(b):
-            self.b = Deterministic(b)
-        else:
-            self.b = b
+        self.a = Deterministic(a) if ia.is_single_number(a) else a
+        self.b = Deterministic(b) if ia.is_single_number(b) else b
 
     def _draw_samples(self, size, random_state):
         a = self.a.draw_sample(random_state=random_state)
@@ -167,7 +169,7 @@ class Uniform(StochasticParameter):
         return self.__str__()
 
     def __str__(self):
-        return "Uniform(%s, %s)" % (self.a, self.b)
+        return f"Uniform({self.a}, {self.b})"
 
 class Deterministic(StochasticParameter):
     def __init__(self, value):
@@ -178,7 +180,9 @@ class Deterministic(StochasticParameter):
         elif ia.is_single_number(value) or ia.is_string(value):
             self.value = value
         else:
-            raise Exception("Expected StochasticParameter object or number or string, got %s." % (type(value),))
+            raise Exception(
+                f"Expected StochasticParameter object or number or string, got {type(value)}."
+            )
 
     def _draw_samples(self, size, random_state):
         return np.tile(np.array([self.value]), size)
@@ -209,7 +213,9 @@ class FromLowerResolution(StochasticParameter):
             elif isinstance(size_percent, StochasticParameter):
                 self.size_percent = size_percent
             else:
-                raise Exception("Expected int, float, tuple of two ints/floats or StochasticParameter for size_percent, got %s." % (type(size_percent),))
+                raise Exception(
+                    f"Expected int, float, tuple of two ints/floats or StochasticParameter for size_percent, got {type(size_percent)}."
+                )
         else: # = elif size_px is not None:
             self.size_method = "px"
             self.size_percent = None
@@ -221,7 +227,9 @@ class FromLowerResolution(StochasticParameter):
             elif isinstance(size_px, StochasticParameter):
                 self.size_px = size_px
             else:
-                raise Exception("Expected int, float, tuple of two ints/floats or StochasticParameter for size_px, got %s." % (type(size_px),))
+                raise Exception(
+                    f"Expected int, float, tuple of two ints/floats or StochasticParameter for size_px, got {type(size_px)}."
+                )
 
         self.other_param = other_param
 
@@ -230,7 +238,7 @@ class FromLowerResolution(StochasticParameter):
         elif isinstance(method, StochasticParameter):
             self.method = method
         else:
-            raise Exception("Expected string or StochasticParameter, got %s." % (type(method),))
+            raise Exception(f"Expected string or StochasticParameter, got {type(method)}.")
 
         self.min_size = min_size
 
@@ -241,7 +249,9 @@ class FromLowerResolution(StochasticParameter):
         elif len(size) == 4:
             n, h, w, c = size
         else:
-            raise Exception("FromLowerResolution can only generate samples of shape (H, W, C) or (N, H, W, C), requested was %s." % (str(size),))
+            raise Exception(
+                f"FromLowerResolution can only generate samples of shape (H, W, C) or (N, H, W, C), requested was {str(size)}."
+            )
 
         if self.size_method == "percent":
             hw_percents = self.size_percent.draw_samples((n, 2), random_state=random_state)
@@ -263,19 +273,16 @@ class FromLowerResolution(StochasticParameter):
                 result = np.zeros((n, h, w, c), dtype=samples.dtype)
             result[i] = samples_upscaled
 
-        if len(size) == 3:
-            return result[0]
-        else:
-            return result
+        return result[0] if len(size) == 3 else result
 
     def __repr__(self):
         return self.__str__()
 
     def __str__(self):
         if self.size_method == "percent":
-            return "FromLowerResolution(size_percent=%s, method=%s, other_param=%s)" % (self.size_percent, self.method, self.other_param)
+            return f"FromLowerResolution(size_percent={self.size_percent}, method={self.method}, other_param={self.other_param})"
         else:
-            return "FromLowerResolution(size_px=%s, method=%s, other_param=%s)" % (self.size_px, self.method, self.other_param)
+            return f"FromLowerResolution(size_px={self.size_px}, method={self.method}, other_param={self.other_param})"
 
 class Clip(StochasticParameter):
     def __init__(self, other_param, minval=None, maxval=None):
@@ -297,8 +304,6 @@ class Clip(StochasticParameter):
             np.clip(samples, self.minval, np.max(samples), out=samples)
         elif self.maxval is not None:
             np.clip(samples, np.min(samples), self.maxval, out=samples)
-        else:
-            pass
         return samples
 
     def __repr__(self):
@@ -313,4 +318,4 @@ class Clip(StochasticParameter):
         elif self.maxval is not None:
             return "Clip(%s, None, %.6f)" % (opstr, float(self.maxval))
         else:
-            return "Clip(%s, None, None)" % (opstr,)
+            return f"Clip({opstr}, None, None)"

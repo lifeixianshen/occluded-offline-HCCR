@@ -44,13 +44,28 @@ def inpaint():
 
         for j in range(4):
             count += 1
-            cv2.imwrite('/home/alyssa/PythonProjects/occluded/test_image/D17/'+str(count)+'_0.jpg', ori[j])
-            cv2.imwrite('/home/alyssa/PythonProjects/occluded/test_image/D17/'+str(count)+'_1.jpg', result[j])
-            cv2.imwrite('/home/alyssa/PythonProjects/occluded/test_image/D17/'+str(count)+'_2.jpg', re[j])
+            cv2.imwrite(
+                f'/home/alyssa/PythonProjects/occluded/test_image/D17/{count}_0.jpg',
+                ori[j],
+            )
+            cv2.imwrite(
+                f'/home/alyssa/PythonProjects/occluded/test_image/D17/{count}_1.jpg',
+                result[j],
+            )
+            cv2.imwrite(
+                f'/home/alyssa/PythonProjects/occluded/test_image/D17/{count}_2.jpg',
+                re[j],
+            )
 
-            a = cv2.imread('/home/alyssa/PythonProjects/occluded/test_image/D17/'+str(count)+'_0.jpg')
-            b = cv2.imread('/home/alyssa/PythonProjects/occluded/test_image/D17/'+str(count)+'_1.jpg')
-            c = cv2.imread('/home/alyssa/PythonProjects/occluded/test_image/D17/'+str(count)+'_2.jpg')
+            a = cv2.imread(
+                f'/home/alyssa/PythonProjects/occluded/test_image/D17/{count}_0.jpg'
+            )
+            b = cv2.imread(
+                f'/home/alyssa/PythonProjects/occluded/test_image/D17/{count}_1.jpg'
+            )
+            c = cv2.imread(
+                f'/home/alyssa/PythonProjects/occluded/test_image/D17/{count}_2.jpg'
+            )
 
             # ab = skimage.measure.compare_psnr(a, b)
             # ac = skimage.measure.compare_psnr(a, c)
